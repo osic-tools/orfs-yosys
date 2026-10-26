@@ -5,6 +5,8 @@ pattern muldiv_c
 // y = (a * b_const) / c_const   ===>   a * eval(b_const / c_const)
 //
 
+udata <bool> did_something
+
 state <SigSpec> a b_const mul_y
 
 match mul
@@ -34,6 +36,7 @@ match div
 	// Check that b_const and c_const is constant
 	filter b_const.is_fully_const()
 	filter port(div, \B).is_fully_const()
+	filter param(div, \A_SIGNED).as_bool() == param(mul, \A_SIGNED).as_bool()
 	index <SigSpec> remove_bottom_padding(port(div, \A)) === mul_y
 endmatch
 
@@ -121,5 +124,6 @@ code
 	// Log, fixup, accept
 	log("muldiv_const pattern in %s: mul=%s, div=%s\n", module, mul, div);
 	mul->fixup_parameters();
+	did_something = true;
 	accept;
 endcode
